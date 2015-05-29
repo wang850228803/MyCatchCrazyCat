@@ -29,6 +29,7 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
     public static final int BLOCKS = 15;
     public static final int DIAM = 100;
     public static final int Y_OFFSET = 350;
+    public static final int LOSE =7;
     
     private Dot metric[][];
     
@@ -42,16 +43,17 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
         super(context);
         getHolder().addCallback(mCallback);
         metric = new Dot[WIDTH][HEIGHT];
-        
-        for (int i = 0; i < WIDTH; i++)
-            for (int j = 0; j < HEIGHT; j++)
-                metric[i][j] = new Dot(i, j);
-        
         initGame();
         setOnTouchListener(this);
     }
     
-    private void initGame() {
+    public void initGame() {
+        cat_x=4;
+        cat_y=5;
+        for (int i = 0; i < WIDTH; i++)
+            for (int j = 0; j < HEIGHT; j++)
+                metric[i][j] = new Dot(i, j);
+        
         Random random =new Random();
         int loc =0;
         for(int i = 0; i < BLOCKS; i++){
@@ -89,6 +91,8 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
         List<Map.Entry<Integer, Integer>> mappingList = null;
         if (getAvaNeibs() == 0)
             win();
+        else if (getAvaNeibs()==LOSE)
+            lose();
         else {
             getDistance();
 
@@ -139,7 +143,8 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
                     cat_y=cat_y-1;
                     break;
             }
-            metric[cat_x][cat_y].setStatus(Dot.STATUS_OFF);
+            metric[cat_x][cat_y].setStatus(Dot.STATUS_IN);
+
         }
 
     }
@@ -176,9 +181,7 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
                     break;
             }
             if(x<0||x>9||y<0||y>9){
-                lose();
-                avaNeibsMap.clear();
-                break;
+                return LOSE;
             }
             else if(metric[x][y].getStatus()==Dot.STATUS_OFF)
                 avaNeibsMap.put(i, metric[x][y]);
@@ -230,9 +233,11 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
                     yDir=-1;
                     break;
             }
+            x = dot.getX();
+            y = dot.getY();
             while(true){
-                x = dot.getX() + xDir;
-                y = dot.getY() + yDir;
+                x += xDir;
+                y += yDir;
                 if(x<0||x>9||y<0||y>9){
                     disNotBlock.put(dir, distance);
                     break;
@@ -249,6 +254,9 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
     
     public void redraw() {
         int offset = 0;
+        avaNeibsMap.clear();
+        disNotBlock.clear();
+        disBlock.clear();
         Canvas c = getHolder().lockCanvas();
         c.drawColor(Color.LTGRAY);
         Paint paint = new Paint();
@@ -283,9 +291,10 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
                 x = (int)(event.getX())/DIAM;
             if(metric[x][y].getStatus()==Dot.STATUS_OFF)
                     metric[x][y].setStatus(Dot.STATUS_ON);
+            move();
+            redraw();
         }
-        move();
-        redraw();
+
         return true;
     }
 }
