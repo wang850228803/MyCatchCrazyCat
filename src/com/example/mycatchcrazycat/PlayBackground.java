@@ -236,7 +236,10 @@ public class PlayBackground extends SurfaceView implements OnTouchListener {
             x = dot.getX();
             y = dot.getY();
             while(true){
-                x += xDir;
+                int offset = 0;
+                if(y%2==1 && dir > 1)
+                    offset=1;
+                x += xDir + offset;
                 y += yDir;
                 if(x<0||x>9||y<0||y>9){
                     disNotBlock.put(dir, distance);
